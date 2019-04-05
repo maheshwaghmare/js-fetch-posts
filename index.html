@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get all Posts with fetch()</title>
+</head>
+<body>
+
+    <h3>Get all Posts with fetch()</h3>
+    <p>Loading 10 posts for each request. It fetch all the posts.</p>
+
+    <ol id="result"></ol>
+
+    <script type="text/javascript">
+
+        var remaining_requests = 0;
+        var total_pages = 0;
+        var request = 1;
+        var result = document.getElementById('result');
+
+        get_all_posts();
+        function get_all_posts( page ) {
+
+            console.log( 'page ' + page );
+
+            if( page ) {
+                page = '?page='+page;
+            } else {
+                page = '?page=1';
+            }
+            fetch( 'https://wpastra.com/wp-json/wp/v2/posts/' + page, {
+                method: 'GET',
+                // credentials: 'include',
+                // localCache: true,
+                // cacheKey: 'cachedJSON'
+                // cache: "force-cache",
+            }).then((res) => {
+                total_pages = res.headers.get('X-WP-TotalPages');
+                console.log( res.headers.get('X-WP-TotalPages') );
+                return res.json();
+            }).then((json) => {
+                if( remaining_requests ) {
+                    remaining_requests = parseInt( remaining_requests ) - 1;
+                } else {
+                    remaining_requests = parseInt( total_pages ) - 1;
+                }
+                // total_pages = parseInt( total_pages ) - 1;
+                request = parseInt( request ) + 1;
+                console.log( 'Remaining.. ' + remaining_requests );
+
+                // console.log( json );
+                json.forEach(function(item) {
+                    console.log( item.title.rendered );
+                    result.innerHTML = result.innerHTML + '<li>'+item.title.rendered+'</li>';
+                });
+
+                if( remaining_requests ) {
+                    get_all_posts( request );
+                }
+            });
+        };
+
+    </script>
+</body>
+</html>
